@@ -9,10 +9,12 @@ function _draw()
     drawPlayer()
     drawBullets()
     draw_shadow()
-    time_table:display()
 end
 
 function _update()
+    if (btn(5)) do 
+        activate_mask()
+    end
     updatePlayer()
     updateBullets()
 end

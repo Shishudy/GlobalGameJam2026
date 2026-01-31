@@ -4,6 +4,7 @@ __lua__
 #include constants.lua
 #include helpers.lua
 #include time.lua
+#include mask.lua
 #include player.lua
 #include bullets.lua
 #include shadows.lua
