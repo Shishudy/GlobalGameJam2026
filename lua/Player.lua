@@ -59,7 +59,7 @@ function updatePlayer()
 	end
 	
 	-- check move collisions // move
-	if object_has_shadow(player.x + player.directionX, player.y + player.directionY) then
+	if object_has_collision(player.x + player.directionX, player.y + player.directionY) then
 		local t, nx, ny, tx, ty, intersect
 
 		t,nx,ny,tx,ty,intersect = hit(

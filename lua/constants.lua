@@ -10,3 +10,5 @@ left = 0 right = 1 up = 2 down = 3
 valid_moves = { left, right, up, down }
 
 map_sand_sprite = 16
+
+shadow_len=128

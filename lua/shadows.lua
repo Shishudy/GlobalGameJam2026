@@ -1,7 +1,5 @@
-
 -- each = {tiles = {{tx,ty}, } , vertices = {{tx,ty}, } , visible_vertices = {{tx,ty}, }}
 shadow_objects = {}
-
 
 function init_objects()
     shadow_objects = {}
@@ -63,19 +61,6 @@ function init_objects()
     end
 end
 
-function object_has_shadow(x, y)
-    -- Uses tile index
-    if x < 0 or x > MAP_W - 1 or y < 0 or y > MAP_H - 1 then
-        return false
-    end
-    local id = mget(x, y)
-    local shadow_flags = { 0, 1 }
-    for f in all(shadow_flags) do
-        if fget(id, f) then return true end
-    end
-    return false
-end
-
 function check_outer_vertices(x1, y1)
     -- returns a list of pixel coords { {px,py}, ... } of exposed outer vertices
     local results = {}
@@ -114,7 +99,7 @@ function check_outer_vertices(x1, y1)
         for nb in all(c.nbs) do
             local nx = x1 + nb[1]
             local ny = y1 + nb[2]
-            if object_has_shadow(nx, ny) then
+            if object_has_collision(nx, ny) then
                 good_vertice = false
                 break
             end
@@ -157,7 +142,7 @@ function is_vertice_visible(px, py, vx, vy, tiles)
 
         -- check current tile
         local tx, ty = tile_at_pixel(x, y)
-        if object_has_shadow(tx, ty) and contains_pair(tiles, tx, ty) then
+        if object_has_collision(tx, ty) and contains_pair(tiles, tx, ty) then
             return false
         end
     end
@@ -195,7 +180,7 @@ function get_shadow_angles(v, tile)
 
     -- get the 2 farthest vertices and their angle
     local angles = {}
-    --{{index,distance,angle},}
+    -- {{index,distance,angle},}
     for i = 1, #v do
         local vx, vy = v[i][1], v[i][2]
         local d = distance(vx, vy, px, py)
@@ -207,20 +192,14 @@ function get_shadow_angles(v, tile)
     qsort(angles, function(a, b) return a[2] > b[2] end)
     -- Remove vertices with similar angles from the 2 selected
     while true do
-        if abs(angles[1][3]-angles[2][3]) < 3 then
-            del(angles,angles[2])
+        if abs(angles[1][3] - angles[2][3]) < 3 then
+            del(angles, angles[2])
         else
             break
         end
     end
 
     local i1, a1, i2, a2 = angles[1][1], angles[1][3], angles[2][1], angles[2][3]
-
-    --print(a1 .. " : " .. a2, 4 * 8, 4 * 8)
---
-    --line(px, py, v[i1][1], v[i1][2])
-    --line(px, py, v[i2][1], v[i2][2])
-    --line(v[i1][1], v[i1][2], v[i2][1], v[i2][2])
 
     -- build clockwise span [left -> right] that MUST include a_ref
     local function cw(a, b)
@@ -231,38 +210,53 @@ function get_shadow_angles(v, tile)
     -- check which ordering includes the reference
     if cw(a1, a_ref) + cw(a_ref, a2) == cw(a1, a2) then
         -- a_ref lies between a1 -> a2 clockwise
-        return { { i1, a1 }, { i2, a2 } }
+        return i1, a1, i2, a2
     else
         -- must swap
-        return { { i2, a2 }, { i1, a1 } }
+        return i2, a2, i1, a1
     end
 end
 
+function adjust_vertice(x,y)
+    local nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { 1, 1 } }
+    for nb = 1, #nbs do
+        local nx = x + nbs[nb][1]
+        local ny = y + nbs[nb][2]
+        if object_has_collision(flr(nx / 8), flr(ny / 8)) then
+            return nx, ny
+        end
+    end
+end
 
 function draw_shadow()
+    local color = 7
     get_shadow_vertices()
+    all_shadows = {}
     for o = 1, #shadow_objects do
         local obj = shadow_objects[o]
         local tiles = obj.tiles
         local vertices = obj.vertices
         local vvertices = obj.visible_vertices
         if #vvertices >= 2 then
-            local r1, r2 = get_shadow_angles(vvertices, tiles[1])
-            --draw_shadow_cone(r1,r2)
-            --draw_object_shadow()
-        end
-    end
+            local i1, a1, i2, a2 = get_shadow_angles(vvertices, tiles[1])
+            local px, py = player.x, player.y
 
-    for i = 1, #shadow_objects do
-        for j = 1, #shadow_objects[i].vertices do
-            pset(shadow_objects[i].vertices[j][1], shadow_objects[i].vertices[j][2], 8)
+            local x1, y1 = vvertices[i1][1], vvertices[i1][2]
+            local x2, y2 = vvertices[i2][1], vvertices[i2][2]
+
+            -- check all all neighbor tiles around this corner for collision
+            nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } }
+            local good_vertice = true
+
+            x1, y1 = adjust_vertice(x1,y1)
+            x2, y2 = adjust_vertice(x2,y2)
+
+            local fx1, fy1 = x1 + sin(a1 / 360) * shadow_len, y1 + cos(a1 / 360) * shadow_len
+            local fx2, fy2 = x2 + sin(a2 / 360) * shadow_len, y2 + cos(a2 / 360) * shadow_len
+
+            pelogen_tri_hvb(x1, y1, x2, y2, fx1, fy1, color)
+            pelogen_tri_hvb(x2, y2, fx1, fy1, fx2, fy2, color)
         end
     end
-    for i = 1, #shadow_objects do
-        for j = 1, #shadow_objects[i].visible_vertices do
-            pset(shadow_objects[i].visible_vertices[j][1], shadow_objects[i].visible_vertices[j][2], 2)
-            print(j, shadow_objects[i].visible_vertices[j][1], shadow_objects[i].visible_vertices[j][2])
-        end
-    end
-    print(stat(7),2*8,2*8)
+    print(stat(7), 2 * 8, 2 * 8)
 end
