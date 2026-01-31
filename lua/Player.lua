@@ -1,9 +1,11 @@
  
 player = {
-	x = 5,
-	y = 5,
+	x = 64,
+	y = 64,
 	spriteW = 1,
 	spriteH = 1,
+	collisionSizeX = 3,
+	collisionSizeY = 3,
 	velocityX = 0,
 	velocityY = 0,
 	sprite = 0,
@@ -27,11 +29,11 @@ function drawPlayer()
 	)
 
 	spr_rotate(
-		133, 
+		133,
 		player.x + player.spriteW * 8 / 2, player.y + player.spriteH * 8 / 4, player.aimDirection,
 		2, 2, --wh
 		0.5, 0.5, --pivot
-		0			--alpha color
+		0 --alpha color
 	)
 
 end
@@ -42,58 +44,57 @@ function updatePlayer()
 
 	--read inputs
 	if btn(⬅️) then
-		if (not btn(4)) player.velocityX -= player.acceleration 
-		player.directionX = 1
-	end
-	if btn(➡️) then
-		if (not btn(4)) player.velocityX += player.acceleration 
+		if (not btn(4)) then player.velocityX -= player.acceleration end
 		player.directionX = -1
 	end
+	if btn(➡️) then
+		if (not btn(4)) then player.velocityX += player.acceleration end
+		 player.directionX = 1
+	end
 	if btn(⬆️) then
-		if (not btn(4)) player.velocityY -= player.acceleration 
+		if (not btn(4)) then player.velocityY -= player.acceleration end
 		player.directionY = -1
 	end
 	if btn(⬇️) then
-		if (not btn(4)) player.velocityY += player.acceleration 
+		if (not btn(4)) then player.velocityY += player.acceleration end
 		player.directionY = 1
 	end
 	
-	-- check move collisions // move
-	if object_has_collision(player.x + player.directionX, player.y + player.directionY) then
-		local t, nx, ny, tx, ty, intersect
+	-- checks walls / move
+	if (not check_space_collision(
+		player.x + player.velocityX + player.spriteW*4,
+		player.y + player.spriteH*4,
+		player.collisionSizeX, player.collisionSizeY)) and
+		0 < player.x + player.velocityX and player.x + player.velocityX < 120 then
 
-		t,nx,ny,tx,ty,intersect = hit(
-			player.x,player.y,player.spriteW,player.spriteH,
-			player.x + player.directionX, player.y + player.directionY, 1, 1,
-			player.x + player.velocityX, player.y + player.velocityY)
-
-		if intersect then
-			player.x = tx
-			player.y = ty
-		end
-	else
-	-- move
-	player.x += player.velocityX
-	player.y += player.velocityY
+		player.x += player.velocityX
+	end
+	if (not check_space_collision(
+		player.x + player.spriteW*4, 
+		player.y + player.velocityY + player.spriteH*4, 
+		player.collisionSizeX, player.collisionSizeY)) and
+		0 < player.y + player.velocityY and player.y + player.velocityY < 120 then
+		player.y += player.velocityY
 	end
 
 	-- friction (lower for more)
-	player.velocityX *= .8
-	player.velocityY *= .8
+	player.velocityX *= 0.8
+	player.velocityY *= 0.8
 
 	--shooting
 	local curShootingBTN = btn(4)
 	if prevShootinBtn and not curShootingBTN then
 		local shootingAngle = (player.aimDirection - 90) / 360
 		spawnBullet(
-		player.x + 4 + 8 * cos(shootingAngle),
-		player.y + 4 + 8 * sin(shootingAngle),
-		cos(shootingAngle),
-		sin(shootingAngle))
+			player.x + 4 + 8 * cos(shootingAngle),
+			player.y + 4 + 8 * sin(shootingAngle),
+			cos(shootingAngle),
+			sin(shootingAngle)
+		)
 	end
 	prevShootinBtn = curShootingBTN
 
-	if (player.directionX != 0 or player.directionY != 0) player.aimTarget = atan2(player.directionY, player.directionX) * 360
+	if (player.directionX != 0 or player.directionY != 0) player.aimTarget = atan2(player.directionY, player.directionX * -1) * 360
 	player.aimLock = isAiming()
 
 	player.aimSpeed = 0.5
@@ -104,6 +105,6 @@ function updatePlayer()
 end
 
 function isAiming()
-	return (player.directionX == 0 and player.directionY == 0 or btn(4))
+	return (btn(4))
 end
 
