@@ -225,7 +225,6 @@ function qsort(a, c, l, r)
 	end
 end
 
-
 function lerp_angle(a, b, t)
 	local diff = (b - a + 540) % 360 - 180
 	return (a + diff * t) % 360

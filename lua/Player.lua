@@ -44,22 +44,22 @@ function updatePlayer()
 
 	--read inputs
 	if btn(⬅️) then
-		if (not btn(4)) player.velocityX -= player.acceleration player.directionX = -1
+		if (not btn(4)) then player.velocityX -= player.acceleration end
+		player.directionX = -1
 	end
 	if btn(➡️) then
-		if (not btn(4)) player.velocityX += player.acceleration player.directionX = 1
+		if (not btn(4)) then player.velocityX += player.acceleration end
+		 player.directionX = 1
 	end
 	if btn(⬆️) then
-		if (not btn(4)) player.velocityY -= player.acceleration player.directionY = -1
+		if (not btn(4)) then player.velocityY -= player.acceleration end
+		player.directionY = -1
 	end
 	if btn(⬇️) then
-		if (not btn(4)) player.velocityY += player.acceleration player.directionY = 1
+		if (not btn(4)) then player.velocityY += player.acceleration end
+		player.directionY = 1
 	end
 	
-	-- check move collisions // move
-	if object_has_collision(player.x + player.directionX, player.y + player.directionY) then
-		local t, nx, ny, tx, ty, intersect
-
 	-- checks walls / move
 	if (not check_space_collision(
 		player.x + player.velocityX + player.spriteW*4,
@@ -73,7 +73,7 @@ function updatePlayer()
 		player.x + player.spriteW*4, 
 		player.y + player.velocityY + player.spriteH*4, 
 		player.collisionSizeX, player.collisionSizeY)) and
-0 < 	player.y + player.velocityY and player.y + player.velocityY < 120 then
+		0 < player.y + player.velocityY and player.y + player.velocityY < 120 then
 		player.y += player.velocityY
 	end
 
@@ -105,6 +105,6 @@ function updatePlayer()
 end
 
 function isAiming()
-	return (player.directionX == 0 and player.directionY == 0 or btn(4))
+	return (btn(4))
 end
 
