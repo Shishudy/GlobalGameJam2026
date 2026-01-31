@@ -40,7 +40,7 @@ function updatePlayer()
 	player.directionX = 0
 	player.directionY = 0
 
-	--player movement and aim
+	--read inputs
 	if btn(⬅️) then
 		if (not btn(4)) player.velocityX -= player.acceleration 
 		player.directionX = 1
@@ -57,6 +57,29 @@ function updatePlayer()
 		if (not btn(4)) player.velocityY += player.acceleration 
 		player.directionY = 1
 	end
+	
+	-- check move collisions // move
+	if object_has_shadow(player.x + player.directionX, player.y + player.directionY) then
+		local t, nx, ny, tx, ty, intersect
+
+		t,nx,ny,tx,ty,intersect = hit(
+			player.x,player.y,player.spriteW,player.spriteH,
+			player.x + player.directionX, player.y + player.directionY, 1, 1,
+			player.x + player.velocityX, player.y + player.velocityY)
+
+		if intersect then
+			player.x = tx
+			player.y = ty
+		end
+	else
+	-- move
+	player.x += player.velocityX
+	player.y += player.velocityY
+	end
+
+	-- friction (lower for more)
+	player.velocityX *= .8
+	player.velocityY *= .8
 
 	--shooting
 	local curShootingBTN = btn(4)
@@ -77,13 +100,7 @@ function updatePlayer()
 	if (player.aimLock) player.aimSpeed = 0.1
 	player.aimDirection = lerp_angle(player.aimDirection, player.aimTarget, player.aimSpeed)
 
-	-- move (add velocity)
-	player.x += player.velocityX
-	player.y += player.velocityY
-
-	-- friction (lower for more)
-	player.velocityX *= .8
-	player.velocityY *= .8
+	
 end
 
 function isAiming()
