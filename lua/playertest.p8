@@ -3,6 +3,7 @@ version 43
 __lua__
 #include constants.lua
 #include helpers.lua
+#include time.lua
 #include player.lua
 #include bullets.lua
 #include shadows.lua
