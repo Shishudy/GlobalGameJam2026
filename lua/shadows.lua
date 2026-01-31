@@ -1,7 +1,10 @@
--- each = {tiles = {{tx,ty}, } , vertices = {{tx,ty}, } , visible_vertices = {{tx,ty}, }}
-shadow_objects = {}
 
 function init_objects()
+    MAP_W_MIN = MAP_W*(current_level-1-(flr((current_level-1)/8)*8))
+    MAP_W_MAX = MAP_W*(current_level-(flr((current_level-1)/8)*8))-1
+    MAP_H_MIN = MAP_H*(flr((current_level-1)/8))
+    MAP_H_MAX = MAP_H*(flr((current_level-1)/8)+1)-1
+
     shadow_objects = {}
     local seen = {}
 
@@ -12,8 +15,9 @@ function init_objects()
         { -1, 1 }, { 0, 1 }, { 1, 1 }
     }
 
-    for ty = 0, 15 do
-        for tx = 0, 15 do
+    for ty = MAP_H_MIN, MAP_H_MAX do
+        for tx = MAP_W_MIN, MAP_W_MAX do
+            
             local id = mget(tx, ty)
 
             -- is this a shadow tile and not visited yet?
@@ -34,8 +38,8 @@ function init_objects()
                         local nx = x + n[1]
                         local ny = y + n[2]
 
-                        -- clamp to 0..15 to avoid weird wraparound
-                        if nx >= 0 and nx <= 15 and ny >= 0 and ny <= 15 then
+                        -- clamp to window
+                        if nx >= MAP_W_MIN and nx <= MAP_W_MAX and ny >= MAP_H_MIN and ny <= MAP_H_MAX then
                             local nid = mget(nx, ny)
                             if (fget(nid, 0) or fget(nid, 1)) and not seen[k(nx, ny)] then
                                 seen[k(nx, ny)] = true
@@ -90,7 +94,7 @@ function check_outer_vertices(x1, y1)
 
     for c in all(corners) do
         -- Skip vertices corners
-        if (x1 == 0 and y1 == 0) or (x1 == 15 and y1 == 0) or (x1 == 0 and y1 == 15) or (x1 == 15 and y1 == 15) then
+        if ((x1 == MAP_W_MIN and y1 == MAP_H_MIN) or (x1 == MAP_W_MAX and y1 == MAP_H_MIN) or (x1 == MAP_W_MIN and y1 == MAP_H_MAX) or (x1 == MAP_W_MAX and y1 == MAP_H_MAX)) then
             goto continue_corner
         end
 
@@ -158,7 +162,7 @@ function get_shadow_vertices()
         -- for vertice of object
         for v = 1, #verts do
             local vx, vy = verts[v][1], verts[v][2]
-            local px, py = player.x, player.y
+            local px, py = player.x+(TILE/2), player.y+(TILE/2)
 
             if is_vertice_visible(px, py, vx, vy, tiles) then
                 add(visible_vertices, { verts[v][1], verts[v][2] })
@@ -170,7 +174,7 @@ end
 
 function get_shadow_angles(v, tile)
     -- best 2 angles that have to include the tile, of the visible vertices
-    local px, py = player.x, player.y
+    local px, py = player.x+(TILE/2), player.y+(TILE/2)
     local tile_x, tile_y = tile[1], tile[2]
 
     -- angle to tile center
@@ -239,7 +243,6 @@ function draw_shadow()
         local vvertices = obj.visible_vertices
         if #vvertices >= 2 then
             local i1, a1, i2, a2 = get_shadow_angles(vvertices, tiles[1])
-            local px, py = player.x, player.y
 
             local x1, y1 = vvertices[i1][1], vvertices[i1][2]
             local x2, y2 = vvertices[i2][1], vvertices[i2][2]

@@ -6,9 +6,9 @@ end
 function _draw()
     cls()
     map(0, 0, 0, 0, 16, 16)
+    draw_shadow()
     drawPlayer()
     drawBullets()
-    draw_shadow()
 end
 
 function _update()

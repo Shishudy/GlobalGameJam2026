@@ -1,3 +1,6 @@
+-- each = {tiles = {{tx,ty}, } , vertices = {{tx,ty}, } , visible_vertices = {{tx,ty}, }}
+shadow_objects = {}
+
 function k(tx, ty)
 	return tx .. "|" .. ty
 end
@@ -15,27 +18,7 @@ end
 function tile_at_pixel(x, y)
 	local tx = flr(x / TILE)
 	local ty = flr(y / TILE)
-	-- clamp to map bounds
-	if tx < 0 then
-		tx = 0
-	elseif tx > 15 then
-		tx = 15
-	end
-	if ty < 0 then
-		ty = 0
-	elseif ty > 15 then
-		ty = 15
-	end
 	return tx, ty
-end
-
-function get_tile_at_pixel(px, py)
-	-- Uses pixels
-	return mget(flr(px / 8), flr(py / 8))
-end
-
-function get_map_cell(unit)
-	return get_tile_at_pixel(unit.x + unit.w / 2, unit.y + unit.h / 2)
 end
 
 function distance(p0x, p0y, p1x, p1y)
@@ -151,18 +134,16 @@ function pelogen_tri_hvb(l, t, c, m, r, b, col)
 end
 
 function object_has_collision(x, y)
-    -- Uses tile index(need to divide pixels by 8 and use floor)
-    if x < 0 or x > MAP_W - 1 or y < 0 or y > MAP_H - 1 then
-        return false
-    end
-    local id = mget(x, y)
-    local shadow_flags = { 0, 1 }
-    for f in all(shadow_flags) do
-        if fget(id, f) then return true end
-    end
-    return false
+	-- Uses tile index(need to divide pixels by 8 and use floor)
+	if x < MAP_W_MIN or x > MAP_W_MAX or y < MAP_H_MIN or y > MAP_H_MAX then
+		return false
+	end
+	local id = mget(x, y)
+	for f in all(collision_flags) do
+		if fget(id, f) then return true end
+	end
+	return false
 end
-
 
 function qsort(a, c, l, r)
 	-- qsort(a,c,l,r)
