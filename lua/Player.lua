@@ -16,6 +16,8 @@ player = {
 	aimLock = false
 }
 
+prevShootinBtn = false
+
 function drawPlayer()
 	-- draw the player
 	spr(
@@ -31,12 +33,14 @@ function drawPlayer()
 		0.5, 0.5, --pivot
 		0			--alpha color
 	)
+
 end
 
 function updatePlayer()
 	player.directionX = 0
 	player.directionY = 0
 
+	--player movement and aim
 	if btn(⬅️) then
 		if (not btn(4)) player.velocityX -= player.acceleration 
 		player.directionX = 1
@@ -53,6 +57,18 @@ function updatePlayer()
 		if (not btn(4)) player.velocityY += player.acceleration 
 		player.directionY = 1
 	end
+
+	--shooting
+	local curShootingBTN = btn(4)
+	if prevShootinBtn and not curShootingBTN then
+		local shootingAngle = (player.aimDirection - 90) / 360
+		spawnBullet(
+		player.x + 4 + 8 * cos(shootingAngle),
+		player.y + 4 + 8 * sin(shootingAngle),
+		cos(shootingAngle),
+		sin(shootingAngle))
+	end
+	prevShootinBtn = curShootingBTN
 
 	if (player.directionX != 0 or player.directionY != 0) player.aimTarget = atan2(player.directionY, player.directionX) * 360
 	player.aimLock = isAiming()
