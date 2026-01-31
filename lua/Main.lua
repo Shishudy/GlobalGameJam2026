@@ -1,13 +1,12 @@
-
 function _init()
 
 end
 
 function _draw()
     cls()
-    _drawPlayer()
+    drawPlayer()
 end
 
 function _update()
-	_updatePlayer()
+    updatePlayer()
 end
