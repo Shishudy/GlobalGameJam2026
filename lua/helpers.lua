@@ -167,3 +167,53 @@ function get_shadow_vertices()
     end
 end
 
+function spr_rotate(s, x, y, a, w, h, px, py, col)
+	w = w or 1
+	h = h or 1
+	px = px or 0.5
+	py = py or 0.5
+	col = col or 0
+
+	local sw = w * 8
+	local sh = h * 8
+
+	local sx = (s % 16) * 8
+	local sy = flr(s / 16) * 8
+
+	-- pivot in pixels
+	local ox = px * sw
+	local oy = py * sh
+
+	-- angle
+	a = a / 360
+	local sa = sin(a)
+	local ca = cos(a)
+
+	-- max radius (half diagonal)
+	local r = sqrt(sw * sw + sh * sh)
+
+	-- destination bounding box size
+	local dw = flr(r)
+	local dh = dw
+
+	for ix = -dw, dw do
+		for iy = -dh, dh do
+			-- inverse rotate destination pixel
+			local dx = ix
+			local dy = iy
+
+			local xx = flr(dx * ca + dy * sa + ox)
+			local yy = flr(-dx * sa + dy * ca + oy)
+
+			if (xx >= 0 and xx < sw and yy >= 0 and yy < sh) then
+				local c = sget(sx + xx, sy + yy)
+				if (c ~= col) pset(x + ix, y + iy, c)
+			end
+		end
+	end
+end
+
+function lerp_angle(a, b, t)
+	local diff = (b - a + 540) % 360 - 180
+	return (a + diff * t) % 360
+end
