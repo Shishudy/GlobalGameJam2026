@@ -9,6 +9,7 @@ function _draw()
     drawPlayer()
     drawBullets()
     draw_shadow()
+    time_table:display()
 end
 
 function _update()
