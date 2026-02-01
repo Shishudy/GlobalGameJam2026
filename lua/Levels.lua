@@ -41,9 +41,5 @@ function parse_levels()
 end
 
 function load_next_level()
-	local button_pressed = btn(4)
-	if is_button_pressed and not button_pressed then
-		current_level += 1
-	end
-	is_button_pressed = button_pressed
+	current_level += 1
 end
