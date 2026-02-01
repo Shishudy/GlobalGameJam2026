@@ -1,8 +1,8 @@
 function _init()
+    load_level()
     init_mask()
     visible_vertices_coroutine = cocreate(coroutine_get_shadow_vertices)
     init_shadow_objects()
-    parse_levels()
     timer_start(false)
 end
 
@@ -21,6 +21,7 @@ function _draw()
 end
 
 function _update()
+    load_next_level()
     timer_update()
     coresume(visible_vertices_coroutine)
     updatePlayer()

@@ -97,6 +97,7 @@ timer = {
 	slow_factor = 0.2,
 	last_time = 0
 }
+
 function timer_start(slow)
 	timer.elapsed = 0
 	timer.slow = slow or false
@@ -123,11 +124,22 @@ function timer_update()
 end
 
 function timer_draw()
-	print(format_time(timer.elapsed), 128 - 20, 2, 7)
+	print(format_time(timer.elapsed), 128 - 16, 2, 7)
+end
+
+function reset_timer()
+	timer.elapsed = 0
+	timer.slow = false
+	timer.slow_factor = 0.2
+	timer.last_time = 0
+end
+
+function stop_timer()
+	timer.running = false
 end
 
 function format_time(t)
 	local whole = flr(t)
-	local hundredths = flr((t - whole) * 100)
-	return whole .. "." .. (hundredths < 10 and "0" .. hundredths or hundredths)
+	local hundredths = flr((t - whole) * 10)
+	return whole .. "." .. hundredths
 end

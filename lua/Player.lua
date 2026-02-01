@@ -1,30 +1,4 @@
-player = {
-	x = 64,
-	y = 64,
-	spriteW = 1,
-	spriteH = 1,
-	frame = 0,
-	mask = 0,
-	maskMax = 8,
-	maskOffsetX = 0,
-	maskOffsetY = 0,
-	collisionSizeX = 3,
-	collisionSizeY = 3,
-	velocityX = 0,
-	velocityY = 0,
-	sprite = 0,
-	acceleration = 0.25,
-	directionX = 1,
-	directionY = 0,
-	aimTarget = 0,
-	aimDirection = 0,
-	aimSpeed = 0.6,
-	aimLock = false,
-	maxBullets = 6,
-	currentBullet = 6,
-	reloading = false,
-	reloadingTime = 30
-}
+player = nil
 
 local prevMaskBTN = false
 local prevShootinBtn = false
@@ -41,7 +15,7 @@ function drawPlayer()
 
 	-- draw mask
 	spr(
-		1 + player.mask, -- frame index
+		player.mask, -- frame index
 		player.x - player.velocityX / 2 + player.maskOffsetX, player.y - 2 - player.velocityY / 2 + player.maskOffsetY, -- x,y (pixels)
 		player.spriteW, player.spriteH -- w,h
 	)
@@ -120,6 +94,7 @@ function updatePlayer()
 		if (player.currentBullet == 0) then
 			currentReloadTime = player.reloadingTime
 			player.reloading = true
+			player.currentBullet = #level.enemies
 		end
 	end
 	prevShootinBtn = curShootingBTN
@@ -128,7 +103,7 @@ function updatePlayer()
 		currentReloadTime -= 1
 		if currentReloadTime <= 0 then
 			player.reloading = false
-			player.currentBullet = player.maxBullets
+			player.currentBullet = #level.enemies
 		end
 	end
 
@@ -177,7 +152,7 @@ function change_mask_inputs()
 	if not prevMaskLeftBTN and curMaskLeftBTN then
 		player.mask += 1
 		if player.mask > player.maskMax then
-			player.mask = 0
+			player.mask = 1
 		end
 		change_pallete(player.mask)
 	end
@@ -186,7 +161,7 @@ function change_mask_inputs()
 	local curMaskRightBTN = btn(➡️)
 	if not prevMaskRightBTN and curMaskRightBTN then
 		player.mask -= 1
-		if player.mask < 0 then
+		if player.mask < 1 then
 			player.mask = player.maskMax
 		end
 		change_pallete(player.mask)

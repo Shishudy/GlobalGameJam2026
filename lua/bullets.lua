@@ -22,6 +22,7 @@ function updateBullets()
 		else
 			if check_location_collision(b.x, b.y, 2) then
 				current_targets_destroyed += 1
+				del(level.enemies[1])
 				mset(flr(b.x / 8) + MAP_W_MIN, flr(b.y / 8) + MAP_H_MIN, 0)
 				del(bullets, b)
 			else
