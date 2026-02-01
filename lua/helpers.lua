@@ -224,7 +224,7 @@ end
 
 
 function change_pallete(i)
-	local v = mask_pallets[i]
+	local v = mask_pallets[i - 1]
 	MaskColor1, MaskColor2 = v[1], v[2]
 	init_mask()
 end
