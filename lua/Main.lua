@@ -9,6 +9,7 @@ end
 function _draw()
     pal(2, MaskColor1)
     pal(7, MaskColor2)
+    mset(flr(player.x / 8) + MAP_W_MIN, flr(player.y / 8) + MAP_H_MIN, 0)
     cls(currentMaskColor)
 	-- draw the portion of the map relative to the level
     map((current_level - 1) * 16)
