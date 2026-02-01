@@ -1,6 +1,6 @@
-
 function _init()
-    init_objects()
+    visible_vertices_coroutine = cocreate(coroutine_get_shadow_vertices)
+    init_shadow_objects()
 end
 
 function _draw()
@@ -12,9 +12,10 @@ function _draw()
 end
 
 function _update()
-    if (btn(5)) do 
+    if btn(5) then
         activate_mask()
     end
+    coresume(visible_vertices_coroutine)
     updatePlayer()
     updateBullets()
 end

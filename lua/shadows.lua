@@ -1,10 +1,14 @@
+shadow_coroutine = nil
+-- {tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},} }
+shadow_objects = {}
 
-function init_objects()
-    MAP_W_MIN = MAP_W*(current_level-1-(flr((current_level-1)/8)*8))
-    MAP_W_MAX = MAP_W*(current_level-(flr((current_level-1)/8)*8))-1
-    MAP_H_MIN = MAP_H*(flr((current_level-1)/8))
-    MAP_H_MAX = MAP_H*(flr((current_level-1)/8)+1)-1
+function init_shadow_objects()
+    MAP_W_MIN = MAP_W * (current_level - 1 - (flr((current_level - 1) / 8) * 8))
+    MAP_W_MAX = MAP_W * (current_level - (flr((current_level - 1) / 8) * 8)) - 1
+    MAP_H_MIN = MAP_H * flr((current_level - 1) / 8)
+    MAP_H_MAX = MAP_H * (flr((current_level - 1) / 8) + 1) - 1
 
+-- {tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},} }
     shadow_objects = {}
     local seen = {}
 
@@ -17,7 +21,6 @@ function init_objects()
 
     for ty = MAP_H_MIN, MAP_H_MAX do
         for tx = MAP_W_MIN, MAP_W_MAX do
-            
             local id = mget(tx, ty)
 
             -- is this a shadow tile and not visited yet?
@@ -62,6 +65,9 @@ function init_objects()
                 add(shadow_objects, obj)
             end
         end
+    end
+    for o = 1, #shadow_objects do
+        get_shadow_vertices(o)
     end
 end
 
@@ -127,7 +133,7 @@ function is_vertice_visible(px, py, vx, vy, tiles)
     local dy = vy - py
 
     -- number px to cover the segment
-    local steps = max(1, ceil(max(abs(dx), abs(dy))))
+    local steps = max(1, ceil(max(abs(dx), abs(dy))) / 4)
     local stepx = dx / steps
     local stepy = dy / steps
 
@@ -153,28 +159,35 @@ function is_vertice_visible(px, py, vx, vy, tiles)
     return true
 end
 
-function get_shadow_vertices()
-    for o = 1, #shadow_objects do
-        local obj = shadow_objects[o]
-        local tiles = obj.tiles
-        local verts = obj.vertices or {}
-        local visible_vertices = {}
-        -- for vertice of object
-        for v = 1, #verts do
-            local vx, vy = verts[v][1], verts[v][2]
-            local px, py = player.x+(TILE/2), player.y+(TILE/2)
+function get_shadow_vertices(o)
+    local obj = shadow_objects[o]
+    local tiles = obj.tiles
+    local verts = obj.vertices or {}
+    local visible_vertices = {}
+    -- for vertice of object
+    for v = 1, #verts do
+        local vx, vy = verts[v][1], verts[v][2]
+        local px, py = player.x + (TILE / 2), player.y + (TILE / 2)
 
-            if is_vertice_visible(px, py, vx, vy, tiles) then
-                add(visible_vertices, { verts[v][1], verts[v][2] })
-            end
+        if is_vertice_visible(px, py, vx, vy, tiles) then
+            add(visible_vertices, { verts[v][1], verts[v][2] })
         end
-        shadow_objects[o].visible_vertices = visible_vertices
+    end
+    shadow_objects[o].visible_vertices = visible_vertices
+end
+
+function coroutine_get_shadow_vertices()
+    while true do
+        for o = 1, #shadow_objects do
+            get_shadow_vertices(o)
+        end
+        yield()
     end
 end
 
 function get_shadow_angles(v, tile)
     -- best 2 angles that have to include the tile, of the visible vertices
-    local px, py = player.x+(TILE/2), player.y+(TILE/2)
+    local px, py = player.x + (TILE / 2), player.y + (TILE / 2)
     local tile_x, tile_y = tile[1], tile[2]
 
     -- angle to tile center
@@ -194,12 +207,12 @@ function get_shadow_angles(v, tile)
 
     -- Sort angles by distance in descending order (farthest first)
     qsort(angles, function(a, b) return a[2] > b[2] end)
-    -- Remove vertices with similar angles from the 2 selected
-    while true do
-        if abs(angles[1][3] - angles[2][3]) < 3 then
+
+    if #angles > 2 then
+        local vx1, vy1 = v[angles[1][1]][1], v[angles[1][1]][2]
+        local vx2, vy2 = v[angles[2][1]][1], v[angles[2][1]][2]
+        if vx1 == vx2 or vy1 == vy2 then
             del(angles, angles[2])
-        else
-            break
         end
     end
 
@@ -221,7 +234,7 @@ function get_shadow_angles(v, tile)
     end
 end
 
-function adjust_vertice(x,y)
+function adjust_vertice(x, y)
     local nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { 1, 1 } }
     for nb = 1, #nbs do
         local nx = x + nbs[nb][1]
@@ -233,8 +246,7 @@ function adjust_vertice(x,y)
 end
 
 function draw_shadow()
-    local color = 7
-    get_shadow_vertices()
+    local oposite_color = 7
     all_shadows = {}
     for o = 1, #shadow_objects do
         local obj = shadow_objects[o]
@@ -243,7 +255,6 @@ function draw_shadow()
         local vvertices = obj.visible_vertices
         if #vvertices >= 2 then
             local i1, a1, i2, a2 = get_shadow_angles(vvertices, tiles[1])
-
             local x1, y1 = vvertices[i1][1], vvertices[i1][2]
             local x2, y2 = vvertices[i2][1], vvertices[i2][2]
 
@@ -251,15 +262,16 @@ function draw_shadow()
             nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } }
             local good_vertice = true
 
-            x1, y1 = adjust_vertice(x1,y1)
-            x2, y2 = adjust_vertice(x2,y2)
+            x1, y1 = adjust_vertice(x1, y1)
+            x2, y2 = adjust_vertice(x2, y2)
 
             local fx1, fy1 = x1 + sin(a1 / 360) * shadow_len, y1 + cos(a1 / 360) * shadow_len
             local fx2, fy2 = x2 + sin(a2 / 360) * shadow_len, y2 + cos(a2 / 360) * shadow_len
 
-            pelogen_tri_hvb(x1, y1, x2, y2, fx1, fy1, color)
-            pelogen_tri_hvb(x2, y2, fx1, fy1, fx2, fy2, color)
+            pelogen_tri_hvb(x1, y1, x2, y2, fx1, fy1, oposite_color)
+            pelogen_tri_hvb(x2, y2, fx1, fy1, fx2, fy2, oposite_color)
         end
     end
-    print(stat(7), 2 * 8, 2 * 8)
+    --fps
+    --print(stat(7), 2 * 8, 2 * 8)
 end

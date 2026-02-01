@@ -2,10 +2,10 @@ MAP_W = 16
 MAP_H = 16
 
 -- Setup on init_objects()
-MAP_W_MIN = 0
-MAP_W_MAX = 0
-MAP_H_MIN = 0
-MAP_H_MAX = 0
+MAP_W_MIN = 0   -- 0
+MAP_W_MAX = 0   -- 16
+MAP_H_MIN = 0   -- 0
+MAP_H_MAX = 0   -- 16
 
 
 TILE = 8
