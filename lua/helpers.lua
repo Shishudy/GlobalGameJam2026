@@ -221,3 +221,10 @@ function check_space_collision(x, y, w, h)
 			or check_location_collision(x - w, y + h ,maskFlag)
 			or check_location_collision(x + w, y + h ,maskFlag)
 end
+
+
+function change_pallete(i)
+	local v = mask_pallets[i]
+	MaskColor1, MaskColor2 = v[1], v[2]
+	init_mask()
+end

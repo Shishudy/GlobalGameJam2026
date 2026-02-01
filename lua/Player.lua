@@ -23,6 +23,7 @@ player = {
 	bullets = 6
 }
 
+local prevMaskBTN = false
 local prevShootinBtn = false
 local maskBtnTime = 0
 
@@ -75,7 +76,7 @@ function updatePlayer()
 		player.y + player.spriteH * 4,
 		player.collisionSizeX, player.collisionSizeY
 	)
-			and MAP_W_MIN * 8 < player.x + player.velocityX and player.x + player.velocityX < MAP_W_MAX * 8 - 8 then
+			and MAP_W_MIN * 8 < player.x + player.velocityX and player.x + player.velocityX < MAP_W_MAX * 8 then
 		player.x += player.velocityX
 	end
 	if not check_space_collision(
@@ -83,7 +84,7 @@ function updatePlayer()
 		player.y + player.velocityY + player.spriteH * 4,
 		player.collisionSizeX, player.collisionSizeY
 	)
-			and MAP_H_MIN * 8 < player.y + player.velocityY and player.y + player.velocityY < MAP_H_MAX * 8 - 8 then
+			and MAP_H_MIN * 8 < player.y + player.velocityY and player.y + player.velocityY < MAP_H_MAX * 8 then
 		player.y += player.velocityY
 	end
 
@@ -147,6 +148,12 @@ function update_movement_inputs()
 		if not btn(4) then player.velocityY += player.acceleration end
 		player.directionY = 1
 	end
+	
+	local curMaskBTN = btn(5)
+    if not prevMaskBTN and curMaskBTN then
+        activate_mask()
+    end
+    prevMaskBTN = curMaskBTN
 end
 
 local prevMaskLeftBTN = false
@@ -156,10 +163,10 @@ function change_mask_inputs()
 	local curMaskLeftBTN = btn(⬅️)
 	if not prevMaskLeftBTN and curMaskLeftBTN then
 		player.mask += 1
-		MaskColor1 = 2
 		if player.mask > player.maskMax then
 			player.mask = 0
 		end
+		change_pallete(player.mask)
 	end
 	prevMaskLeftBTN = curMaskLeftBTN
 
@@ -169,6 +176,7 @@ function change_mask_inputs()
 		if player.mask < 0 then
 			player.mask = player.maskMax
 		end
+		change_pallete(player.mask)
 	end
 	prevMaskRightBTN = curMaskRightBTN
 end

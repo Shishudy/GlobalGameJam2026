@@ -7,17 +7,19 @@ function _init()
 end
 
 function _draw()
+    pal(2, MaskColor1)
+    pal(7, MaskColor2)
     cls(currentMaskColor)
 	-- draw the portion of the map relative to the level
     map((current_level - 1) * 16)
-    drawPlayer()
-    drawBullets()
     draw_shadow()
+    pal()
+    drawBullets()
+    drawPlayer()
     timer_draw()
 end
 
 function _update()
-    update_mask()
     timer_update()
     coresume(visible_vertices_coroutine)
     updatePlayer()

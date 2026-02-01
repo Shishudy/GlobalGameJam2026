@@ -6,16 +6,13 @@ negativeMaskColor = 1
 local prevBTN = false
 
 function init_mask()
+    if inverted then
+    currentMaskColor = MaskColor2
+    negativeMaskColor = MaskColor1
+    else
     currentMaskColor = MaskColor1
     negativeMaskColor = MaskColor2
-end
-
-function update_mask()
-    local curBTN = btn(5)
-    if not prevBTN and curBTN then
-        activate_mask()
     end
-    prevBTN = curBTN
 end
 
 function activate_mask()
