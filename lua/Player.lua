@@ -5,7 +5,7 @@ player = {
 	spriteH = 1,
 	frame = 0,
 	mask = 0,
-	maskMax = 2,
+	maskMax = 8,
 	maskOffsetX = 0,
 	maskOffsetY = 0,
 	collisionSizeX = 3,
@@ -150,6 +150,7 @@ function change_mask_inputs()
 	local curMaskLeftBTN = btn(⬅️)
 	if not prevMaskLeftBTN and curMaskLeftBTN then
 		player.mask += 1
+		MaskColor1 = 2
 		if player.mask > player.maskMax then
 			player.mask = 0
 		end
