@@ -1,10 +1,11 @@
 function _init()
+    init_mask()
     visible_vertices_coroutine = cocreate(coroutine_get_shadow_vertices)
     init_shadow_objects()
 end
 
 function _draw()
-    cls()
+    cls(currentMaskColor)
     map(0, 0, 0, 0, 16, 16)
     draw_shadow()
     drawPlayer()
