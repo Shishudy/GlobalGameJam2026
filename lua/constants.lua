@@ -12,6 +12,8 @@ TILE = 8
 
 current_level=1
 
+MaskColor1 = 0
+MaskColor2 = 7
 
 collision_flags = { 0 , 1 }
 
