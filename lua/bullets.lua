@@ -14,7 +14,7 @@ end
 function updateBullets()
 	for b in all(bullets) do
 		if check_space_collision(b.x + b.dx, b.y + b.dy, 1, 1)
-				or b.x > MAP_W_MAX * 8 or b.x < MAP_W_MIN * 8 or b.y > MAP_H_MAX * 8 or b.y < MAP_H_MIN * 8 then
+				or b.x > 128 or b.x < 0 or b.y > 128 or b.y < 0 then
 			del(bullets, b)
 		else
 			if check_location_collision(b.x, b.y, 2) then

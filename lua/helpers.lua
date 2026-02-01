@@ -210,7 +210,7 @@ function lerp_angle(a, b, t)
 end
 
 function check_location_collision(x, y , f)
-	local val = mget(flr(x / 8),flr(y/8))
+	local val = mget(flr(x / 8) + MAP_W_MIN,flr(y/8) + MAP_H_MIN)
 	return fget(val, f)
 	-- change tag number
 end
