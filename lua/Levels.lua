@@ -1,5 +1,5 @@
 levels = {}
-current_level = 0
+current_level = 1
 
 -- scan the map for up to 5 levels of 16x16 tiles
 function parse_levels()

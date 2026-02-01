@@ -13,7 +13,7 @@ function _draw()
     draw_shadow()
     timer_draw()
 	-- draw the portion of the map relative to the level
-    map(current_level * 16)
+    map((current_level - 1) * 16)
 end
 
 function _update()
