@@ -20,12 +20,16 @@ player = {
 	aimDirection = 0,
 	aimSpeed = 0.6,
 	aimLock = false,
-	bullets = 6
+	maxBullets = 6,
+	currentBullet = 6,
+	reloading = false,
+	reloadingTime = 30
 }
 
 local prevMaskBTN = false
 local prevShootinBtn = false
 local maskBtnTime = 0
+local currentReloadTime = 0
 
 function drawPlayer()
 	-- draw the player
@@ -111,13 +115,22 @@ function updatePlayer()
 			cos(shootingAngle),
 			sin(shootingAngle)
 		)
-		player.bullets -= 1
+		player.currentBullet -= 1
 		slow_motion()
-		if (player.bullets == 0) then
-			player.bullets = 6
+		if (player.currentBullet == 0) then
+			currentReloadTime = player.reloadingTime
+			player.reloading = true
 		end
 	end
 	prevShootinBtn = curShootingBTN
+
+	if player.reloading then
+		currentReloadTime -= 1
+		if currentReloadTime <= 0 then
+			player.reloading = false
+			player.currentBullet = player.maxBullets
+		end
+	end
 
 	if (player.directionX != 0 or player.directionY != 0) player.aimTarget = atan2(player.directionY, player.directionX * -1) * 360
 	player.aimLock = isAiming()

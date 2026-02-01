@@ -17,6 +17,7 @@ function _draw()
     drawBullets()
     drawPlayer()
     timer_draw()
+    draw_bullet_clip()
 end
 
 function _update()

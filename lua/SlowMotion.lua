@@ -6,7 +6,7 @@ function slow_motion()
 		timer_set_slow(true)
 		-- timer(true)
 	else
-		if (player.bullets > 0) then
+		if (player.currentBullet > 0) then
 			return
 		end
 		-- timer(false)
