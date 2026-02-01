@@ -8,7 +8,7 @@ function init_shadow_objects()
     MAP_H_MIN = MAP_H * flr((current_level - 1) / 8)
     MAP_H_MAX = MAP_H * (flr((current_level - 1) / 8) + 1) - 1
 
--- {tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},} }
+    -- {tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},} }
     shadow_objects = {}
     local seen = {}
 
@@ -207,12 +207,17 @@ function get_shadow_angles(v, tile)
 
     -- Sort angles by distance in descending order (farthest first)
     qsort(angles, function(a, b) return a[2] > b[2] end)
-
-    if #angles > 2 then
-        local vx1, vy1 = v[angles[1][1]][1], v[angles[1][1]][2]
-        local vx2, vy2 = v[angles[2][1]][1], v[angles[2][1]][2]
-        if vx1 == vx2 or vy1 == vy2 then
-            del(angles, angles[2])
+    while true do
+        if #angles > 2 then
+            local vx1, vy1 = v[angles[1][1]][1], v[angles[1][1]][2]
+            local vx2, vy2 = v[angles[2][1]][1], v[angles[2][1]][2]
+            if vx1 == vx2 or vy1 == vy2 then
+                del(angles, angles[2])
+            else
+                break
+            end
+        else
+            break
         end
     end
 
