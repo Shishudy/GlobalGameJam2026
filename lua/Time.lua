@@ -1,4 +1,4 @@
-time_table = {10, 15}
+time_table = { 10, 15 }
 
 -- rep helper: repeat char n times
 function rep(c, n)
@@ -88,4 +88,46 @@ function time_table:display()
 
 	-- Print total row
 	print(pad_r("total", label_w, " ") .. " : " .. pad_l(tostring(total), max_val_w, " "), left, yy)
+end
+
+timer = {
+	elapsed = 0,
+	running = false,
+	slow = false,
+	slow_factor = 0.2,
+	last_time = 0
+}
+function timer_start(slow)
+	timer.elapsed = 0
+	timer.slow = slow or false
+	timer.running = true
+	timer.last_time = time()
+end
+
+function timer_set_slow(slow)
+	timer.slow = slow
+end
+
+function timer_update()
+	if not timer.running then return end
+
+	local now = time()
+	local dt = now - timer.last_time
+
+	if timer.slow then
+		dt *= timer.slow_factor
+	end
+
+	timer.elapsed += dt
+	timer.last_time = now
+end
+
+function timer_draw()
+	print(format_time(timer.elapsed), 128 - 20, 2, 7)
+end
+
+function format_time(t)
+	local whole = flr(t)
+	local hundredths = flr((t - whole) * 100)
+	return whole .. "." .. (hundredths < 10 and "0" .. hundredths or hundredths)
 end

@@ -8,6 +8,8 @@ __lua__
 #include player.lua
 #include bullets.lua
 #include shadows.lua
+#include levels.lua
+#include slowmotion.lua
 #include main.lua
 
 __gfx__

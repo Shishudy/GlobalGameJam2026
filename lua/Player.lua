@@ -19,7 +19,8 @@ player = {
 	aimTarget = 0,
 	aimDirection = 0,
 	aimSpeed = 0.6,
-	aimLock = false
+	aimLock = false,
+	bullets = 6
 }
 
 local prevShootinBtn = false
@@ -109,6 +110,11 @@ function updatePlayer()
 			cos(shootingAngle),
 			sin(shootingAngle)
 		)
+		player.bullets -= 1
+		slow_motion()
+		if (player.bullets == 0) then
+			player.bullets = 6
+		end
 	end
 	prevShootinBtn = curShootingBTN
 
