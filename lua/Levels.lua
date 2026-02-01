@@ -70,5 +70,6 @@ function load_next_level()
 		current_targets_destroyed = 0
 		load_level()
 		init_shadow_objects()
+		change_pallete(player.mask)
 	end
 end
