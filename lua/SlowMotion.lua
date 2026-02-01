@@ -1,6 +1,8 @@
+slow_motion_status = false
+
 function slow_motion()
-	if not active then
-		active = true
+	if not slow_motion_status then
+		slow_motion_status = true
 		timer_set_slow(true)
 		-- timer(true)
 	else
@@ -9,7 +11,8 @@ function slow_motion()
 		end
 		-- timer(false)
 		timer_set_slow(false)
-		active = false
+		slow_motion_status = false
 	end
 
 end
+
