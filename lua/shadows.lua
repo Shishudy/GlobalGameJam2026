@@ -121,7 +121,18 @@ function check_outer_vertices(x1, y1, color_flag)
         local base_py = y1 * 8
         if good_vertice then
             -- Add outside offset
-            add(results, { base_px + c.pix_dx + c.nbs[3][1], base_py + c.pix_dy + c.nbs[3][2] })
+            local offset_x, offset_y = c.nbs[3][1], c.nbs[3][2]
+            local sx1 = x1 % 16
+            local sy1 = y1 % 16
+
+            if (sx1 == 0 and c.pix_dx == 0) or (sx1 == 15 and c.pix_dx == 7) then
+                offset_x = 0
+            end
+
+            if (sy1 == 0 and c.pix_dy == 0) or (sy1 == 15 and c.pix_dy == 7) then
+                offset_y = 0
+            end
+            add(results, { base_px + c.pix_dx + offset_x, base_py + c.pix_dy + offset_y })
         end
         ::continue_corner::
     end
@@ -129,17 +140,18 @@ function check_outer_vertices(x1, y1, color_flag)
 end
 
 function is_vertice_visible(px, py, vx, vy, tiles, flag)
+    local scaled_px, scaled_py = px + (current_level - 1) * 128, py
     -- returns true if segment (px,py) -> (vx,vy) does NOT hit other part of the same object
-    local dx = vx - px
-    local dy = vy - py
+    local dx = vx - scaled_px
+    local dy = vy - scaled_py
 
     -- number px to cover the segment
     local steps = max(1, ceil(max(abs(dx), abs(dy))) / 4)
     local stepx = dx / steps
     local stepy = dy / steps
 
-    local x = px
-    local y = py
+    local x = scaled_px
+    local y = scaled_py
 
     -- march along the ray
     for i = 1, steps do
@@ -189,7 +201,7 @@ end
 
 function get_shadow_angles(v, tile)
     -- best 2 angles that have to include the tile, of the visible vertices
-    local px, py = player.x + (TILE / 2), player.y + (TILE / 2)
+    local px, py = player.x + (TILE / 2) + (current_level - 1) * 128, player.y + (TILE / 2)
     local tile_x, tile_y = tile[1], tile[2]
 
     -- angle to tile center
@@ -272,6 +284,7 @@ function draw_shadow()
 
                 x1, y1 = adjust_vertice(x1, y1, color_flag)
                 x2, y2 = adjust_vertice(x2, y2, color_flag)
+                x1, y1, x2, y2 = x1 % 128, y1 % 128, x2 % 128, y2 % 128
 
                 local fx1, fy1 = x1 + sin(a1 / 360) * shadow_len, y1 + cos(a1 / 360) * shadow_len
                 local fx2, fy2 = x2 + sin(a2 / 360) * shadow_len, y2 + cos(a2 / 360) * shadow_len
@@ -281,6 +294,16 @@ function draw_shadow()
             end
         end
     end
+    --for i = 1, #shadow_objects do
+    --    for j = 1, #shadow_objects[i].vertices do
+    --        pset(shadow_objects[i].vertices[j][1] % 128, shadow_objects[i].vertices[j][2] % 128, 8)
+    --    end
+    --end
+    --for i = 1, #shadow_objects do
+    --    for j = 1, #shadow_objects[i].visible_vertices do
+    --        pset(shadow_objects[i].visible_vertices[j][1] % 128, shadow_objects[i].visible_vertices[j][2] % 128, 2)
+    --    end
+    --end
     --fps
     --print(stat(7), 2 * 8, 2 * 8)
 end
