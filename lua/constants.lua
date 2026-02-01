@@ -11,6 +11,7 @@ MAP_H_MAX = 0   -- 16
 TILE = 8
 
 current_level=1
+current_targets_destroyed = 0
 
 MaskColor1 = 0
 MaskColor2 = 7

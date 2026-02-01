@@ -209,15 +209,15 @@ function lerp_angle(a, b, t)
 	return (a + diff * t) % 360
 end
 
-function check_location_collision(x, y)
+function check_location_collision(x, y , f)
 	local val = mget(flr(x / 8),flr(y/8))
-	return fget(val, maskFlag)
+	return fget(val, f)
 	-- change tag number
 end
 
 function check_space_collision(x, y, w, h)
-	return check_location_collision(x - w, y - h)
-			or check_location_collision(x + w, y - h)
-			or check_location_collision(x - w, y + h)
-			or check_location_collision(x + w, y + h)
+	return check_location_collision(x - w, y - h, maskFlag)
+			or check_location_collision(x + w, y - h ,maskFlag)
+			or check_location_collision(x - w, y + h ,maskFlag)
+			or check_location_collision(x + w, y + h ,maskFlag)
 end
