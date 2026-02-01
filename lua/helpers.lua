@@ -212,8 +212,8 @@ function lerp_angle(a, b, t)
 end
 
 function check_location_collision(x, y)
-	val = mget(flr(x / 8),flr(y/8))
-	return fget(val, 0)
+	local val = mget(flr(x / 8),flr(y/8))
+	return fget(val, maskFlag)
 	-- change tag number
 end
 

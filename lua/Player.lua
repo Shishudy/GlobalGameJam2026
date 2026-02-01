@@ -18,7 +18,7 @@ player = {
 	aimLock = false
 }
 
-prevShootinBtn = false
+local prevShootinBtn = false
 
 function drawPlayer()
 	-- draw the player
@@ -35,7 +35,7 @@ function drawPlayer()
 		0.5, 0.5, --pivot
 		0 --alpha color
 	)
-
+	print (inverted)
 end
 
 function updatePlayer()
@@ -65,7 +65,7 @@ function updatePlayer()
 		player.x + player.velocityX + player.spriteW*4,
 		player.y + player.spriteH*4,
 		player.collisionSizeX, player.collisionSizeY)) and
-		0 < player.x + player.velocityX and player.x + player.velocityX < 120 then
+		MAP_W_MIN * 8 < player.x + player.velocityX and player.x + player.velocityX < MAP_W_MAX * 8 - 8 then
 
 		player.x += player.velocityX
 	end
@@ -73,7 +73,7 @@ function updatePlayer()
 		player.x + player.spriteW*4, 
 		player.y + player.velocityY + player.spriteH*4, 
 		player.collisionSizeX, player.collisionSizeY)) and
-		0 < player.y + player.velocityY and player.y + player.velocityY < 120 then
+		MAP_H_MIN * 8 < player.y + player.velocityY and player.y + player.velocityY < MAP_H_MAX * 8 -8 then
 		player.y += player.velocityY
 	end
 

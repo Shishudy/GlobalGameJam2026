@@ -12,9 +12,7 @@ function _draw()
 end
 
 function _update()
-    if btn(5) then
-        activate_mask()
-    end
+    update_mask()
     coresume(visible_vertices_coroutine)
     updatePlayer()
     updateBullets()

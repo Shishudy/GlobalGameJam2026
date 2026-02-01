@@ -12,6 +12,7 @@ TILE = 8
 
 current_level=1
 
-collision_flags = { 0, 1 }
+
+collision_flags = { 0 , 1 }
 
 shadow_len=1024
