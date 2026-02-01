@@ -81,7 +81,7 @@ function updatePlayer()
 
 	--shooting
 	local curShootingBTN = btn(4)
-	if prevShootinBtn and not curShootingBTN then
+	if prevShootinBtn and not curShootingBTN and not player.reloading then
 		local shootingAngle = (player.aimDirection - 90) / 360
 		spawnBullet(
 			player.x + 4 + 8 * cos(shootingAngle),
@@ -94,7 +94,6 @@ function updatePlayer()
 		if (player.currentBullet == 0) then
 			currentReloadTime = player.reloadingTime
 			player.reloading = true
-			player.currentBullet = #level.enemies
 		end
 	end
 	prevShootinBtn = curShootingBTN

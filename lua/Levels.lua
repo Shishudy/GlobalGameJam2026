@@ -60,6 +60,9 @@ function load_level()
 	lvl.player.currentBullet = #lvl.enemies or 0
 	player = lvl.player
 	level = lvl
+	change_pallete(player.mask)
+	init_shadow_objects()
+	mset(flr(player.x / 8) + MAP_W_MIN, flr(player.y / 8) + MAP_H_MIN, 0)
 end
 
 function load_next_level()
@@ -69,7 +72,6 @@ function load_next_level()
 		current_level += 1
 		current_targets_destroyed = 0
 		load_level()
-		init_shadow_objects()
-		change_pallete(player.mask)
+
 	end
 end
