@@ -56,7 +56,7 @@ function updatePlayer()
 
 	--read inputs
 
-	if  btn(5) then
+	if btn(5) then
 		maskBtnTime += 1
 		if maskBtnTime >= 10 then
 			change_mask_inputs()
@@ -156,7 +156,7 @@ function change_mask_inputs()
 	end
 	prevMaskLeftBTN = curMaskLeftBTN
 
-	local curMaskRightBTN = btn(➡️) 
+	local curMaskRightBTN = btn(➡️)
 	if not prevMaskRightBTN and curMaskRightBTN then
 		player.mask -= 1
 		if player.mask < 0 then
