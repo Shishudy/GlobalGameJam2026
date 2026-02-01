@@ -1,5 +1,5 @@
 shadow_coroutine = nil
--- {tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},} }
+-- {{color_flag, tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},}}, }
 shadow_objects = {}
 
 function init_shadow_objects()
@@ -8,7 +8,6 @@ function init_shadow_objects()
     MAP_H_MIN = MAP_H * flr((current_level - 1) / 8)
     MAP_H_MAX = MAP_H * (flr((current_level - 1) / 8) + 1) - 1
 
-    -- {tiles{{tx,ty},}, vertices{{vx,vy},}, visible_vertices{{vx,vy},} }
     shadow_objects = {}
     local seen = {}
 
@@ -28,6 +27,8 @@ function init_shadow_objects()
                 local obj = { tiles = {}, vertices = {} }
                 local queue = { { tx, ty } }
                 seen[k(tx, ty)] = true
+                local color_flag = fget(id, 0) and 0 or 1
+                obj.color_flag = color_flag
 
                 -- flood fill
                 while #queue > 0 do
@@ -44,7 +45,7 @@ function init_shadow_objects()
                         -- clamp to window
                         if nx >= MAP_W_MIN and nx <= MAP_W_MAX and ny >= MAP_H_MIN and ny <= MAP_H_MAX then
                             local nid = mget(nx, ny)
-                            if (fget(nid, 0) or fget(nid, 1)) and not seen[k(nx, ny)] then
+                            if fget(nid, color_flag) and not seen[k(nx, ny)] then
                                 seen[k(nx, ny)] = true
                                 add(queue, { nx, ny })
                             end
@@ -55,7 +56,7 @@ function init_shadow_objects()
                 for i = 1, #obj.tiles do
                     -- Block location
                     local px, py = obj.tiles[i][1], obj.tiles[i][2]
-                    result = check_outer_vertices(px, py)
+                    result = check_outer_vertices(px, py, color_flag)
                     for r = 1, #result do
                         add(obj.vertices, result[r])
                     end
@@ -71,7 +72,7 @@ function init_shadow_objects()
     end
 end
 
-function check_outer_vertices(x1, y1)
+function check_outer_vertices(x1, y1, color_flag)
     -- returns a list of pixel coords { {px,py}, ... } of exposed outer vertices
     local results = {}
     -- name, pixel offset within tile, and the three neighbor tiles that must be empty
@@ -104,12 +105,12 @@ function check_outer_vertices(x1, y1)
             goto continue_corner
         end
 
-        -- check all three neighbor tiles around this corner dont have shadow
+        -- check all three neighbor tiles around this corner dont have collision
         local good_vertice = true
         for nb in all(c.nbs) do
             local nx = x1 + nb[1]
             local ny = y1 + nb[2]
-            if object_has_collision(nx, ny) then
+            if object_has_collision(nx, ny, color_flag) then
                 good_vertice = false
                 break
             end
@@ -127,7 +128,7 @@ function check_outer_vertices(x1, y1)
     return results
 end
 
-function is_vertice_visible(px, py, vx, vy, tiles)
+function is_vertice_visible(px, py, vx, vy, tiles, flag)
     -- returns true if segment (px,py) -> (vx,vy) does NOT hit other part of the same object
     local dx = vx - px
     local dy = vy - py
@@ -152,7 +153,7 @@ function is_vertice_visible(px, py, vx, vy, tiles)
 
         -- check current tile
         local tx, ty = tile_at_pixel(x, y)
-        if object_has_collision(tx, ty) and contains_pair(tiles, tx, ty) then
+        if object_has_collision(tx, ty, flag) and contains_pair(tiles, tx, ty) then
             return false
         end
     end
@@ -164,12 +165,13 @@ function get_shadow_vertices(o)
     local tiles = obj.tiles
     local verts = obj.vertices or {}
     local visible_vertices = {}
+    local color_flag = obj.color_flag
     -- for vertice of object
     for v = 1, #verts do
         local vx, vy = verts[v][1], verts[v][2]
         local px, py = player.x + (TILE / 2), player.y + (TILE / 2)
 
-        if is_vertice_visible(px, py, vx, vy, tiles) then
+        if is_vertice_visible(px, py, vx, vy, tiles, color_flag) then
             add(visible_vertices, { verts[v][1], verts[v][2] })
         end
     end
@@ -239,42 +241,44 @@ function get_shadow_angles(v, tile)
     end
 end
 
-function adjust_vertice(x, y)
+function adjust_vertice(x, y, flag)
     local nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { 1, 1 } }
     for nb = 1, #nbs do
         local nx = x + nbs[nb][1]
         local ny = y + nbs[nb][2]
-        if object_has_collision(flr(nx / 8), flr(ny / 8)) then
+        if object_has_collision(flr(nx / 8), flr(ny / 8), flag) then
             return nx, ny
         end
     end
 end
 
 function draw_shadow()
-    local oposite_color = 7
     all_shadows = {}
     for o = 1, #shadow_objects do
         local obj = shadow_objects[o]
         local tiles = obj.tiles
         local vertices = obj.vertices
         local vvertices = obj.visible_vertices
-        if #vvertices >= 2 then
-            local i1, a1, i2, a2 = get_shadow_angles(vvertices, tiles[1])
-            local x1, y1 = vvertices[i1][1], vvertices[i1][2]
-            local x2, y2 = vvertices[i2][1], vvertices[i2][2]
+        local color_flag = obj.color_flag
+        if color_flag == maskFlag then
+            if #vvertices >= 2 then
+                local i1, a1, i2, a2 = get_shadow_angles(vvertices, tiles[1])
+                local x1, y1 = vvertices[i1][1], vvertices[i1][2]
+                local x2, y2 = vvertices[i2][1], vvertices[i2][2]
 
-            -- check all all neighbor tiles around this corner for collision
-            nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } }
-            local good_vertice = true
+                -- check all all neighbor tiles around this corner for collision
+                nbs = { { -1, -1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } }
+                local good_vertice = true
 
-            x1, y1 = adjust_vertice(x1, y1)
-            x2, y2 = adjust_vertice(x2, y2)
+                x1, y1 = adjust_vertice(x1, y1, color_flag)
+                x2, y2 = adjust_vertice(x2, y2, color_flag)
 
-            local fx1, fy1 = x1 + sin(a1 / 360) * shadow_len, y1 + cos(a1 / 360) * shadow_len
-            local fx2, fy2 = x2 + sin(a2 / 360) * shadow_len, y2 + cos(a2 / 360) * shadow_len
+                local fx1, fy1 = x1 + sin(a1 / 360) * shadow_len, y1 + cos(a1 / 360) * shadow_len
+                local fx2, fy2 = x2 + sin(a2 / 360) * shadow_len, y2 + cos(a2 / 360) * shadow_len
 
-            pelogen_tri_hvb(x1, y1, x2, y2, fx1, fy1, oposite_color)
-            pelogen_tri_hvb(x2, y2, fx1, fy1, fx2, fy2, oposite_color)
+                pelogen_tri_hvb(x1, y1, x2, y2, fx1, fy1, negativeMaskColor)
+                pelogen_tri_hvb(x2, y2, fx1, fy1, fx2, fy2, negativeMaskColor)
+            end
         end
     end
     --fps

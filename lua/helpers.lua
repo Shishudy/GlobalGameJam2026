@@ -133,15 +133,13 @@ function pelogen_tri_hvb(l, t, c, m, r, b, col)
 	end
 end
 
-function object_has_collision(x, y)
+function object_has_collision(x, y, flag)
 	-- Uses tile index(need to divide pixels by 8 and use floor)
 	if x < MAP_W_MIN or x > MAP_W_MAX or y < MAP_H_MIN or y > MAP_H_MAX then
 		return false
 	end
 	local id = mget(x, y)
-	for f in all(collision_flags) do
-		if fget(id, f) then return true end
-	end
+	if fget(id, flag) then return true end
 	return false
 end
 
