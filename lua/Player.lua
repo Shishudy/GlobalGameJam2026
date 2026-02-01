@@ -1,9 +1,13 @@
- 
 player = {
 	x = 64,
 	y = 64,
 	spriteW = 1,
 	spriteH = 1,
+	frame = 0,
+	mask = 0,
+	maskMax = 2,
+	maskOffsetX = 0,
+	maskOffsetY = 0,
 	collisionSizeX = 3,
 	collisionSizeY = 3,
 	velocityX = 0,
@@ -19,23 +23,31 @@ player = {
 }
 
 local prevShootinBtn = false
+local maskBtnTime = 0
 
 function drawPlayer()
 	-- draw the player
 	spr(
-		128, -- frame index
+		32 + player.frame, -- frame index
 		player.x, player.y, -- x,y (pixels)
 		player.spriteW, player.spriteH -- w,h
 	)
 
+	-- draw mask
+	spr(
+		1 + player.mask, -- frame index
+		player.x - player.velocityX / 2 + player.maskOffsetX, player.y - 2 - player.velocityY / 2 + player.maskOffsetY, -- x,y (pixels)
+		player.spriteW, player.spriteH -- w,h
+	)
+
+	--aiming
 	spr_rotate(
-		133,
+		46,
 		player.x + player.spriteW * 8 / 2, player.y + player.spriteH * 8 / 4, player.aimDirection,
 		2, 2, --wh
 		0.5, 0.5, --pivot
 		0 --alpha color
 	)
-	print (inverted)
 end
 
 function updatePlayer()
@@ -43,43 +55,49 @@ function updatePlayer()
 	player.directionY = 0
 
 	--read inputs
-	if btn(⬅️) then
-		if (not btn(4)) then player.velocityX -= player.acceleration end
-		player.directionX = -1
-	end
-	if btn(➡️) then
-		if (not btn(4)) then player.velocityX += player.acceleration end
-		 player.directionX = 1
-	end
-	if btn(⬆️) then
-		if (not btn(4)) then player.velocityY -= player.acceleration end
-		player.directionY = -1
-	end
-	if btn(⬇️) then
-		if (not btn(4)) then player.velocityY += player.acceleration end
-		player.directionY = 1
-	end
-	
-	-- checks walls / move
-	if (not check_space_collision(
-		player.x + player.velocityX + player.spriteW*4,
-		player.y + player.spriteH*4,
-		player.collisionSizeX, player.collisionSizeY)) and
-		MAP_W_MIN * 8 < player.x + player.velocityX and player.x + player.velocityX < MAP_W_MAX * 8 - 8 then
 
+	if  btn(5) then
+		maskBtnTime += 1
+		if maskBtnTime >= 10 then
+			change_mask_inputs()
+		else
+			update_movement_inputs()
+		end
+	else
+		maskBtnTime = 0
+		update_movement_inputs()
+	end
+
+	-- checks walls / move
+	if not check_space_collision(
+		player.x + player.velocityX + player.spriteW * 4,
+		player.y + player.spriteH * 4,
+		player.collisionSizeX, player.collisionSizeY
+	)
+			and MAP_W_MIN * 8 < player.x + player.velocityX and player.x + player.velocityX < MAP_W_MAX * 8 - 8 then
 		player.x += player.velocityX
 	end
-	if (not check_space_collision(
-		player.x + player.spriteW*4, 
-		player.y + player.velocityY + player.spriteH*4, 
-		player.collisionSizeX, player.collisionSizeY)) and
-		MAP_H_MIN * 8 < player.y + player.velocityY and player.y + player.velocityY < MAP_H_MAX * 8 -8 then
+	if not check_space_collision(
+		player.x + player.spriteW * 4,
+		player.y + player.velocityY + player.spriteH * 4,
+		player.collisionSizeX, player.collisionSizeY
+	)
+			and MAP_H_MIN * 8 < player.y + player.velocityY and player.y + player.velocityY < MAP_H_MAX * 8 - 8 then
 		player.y += player.velocityY
 	end
 
 	-- friction (lower for more)
 	player.velocityX *= 0.8
 	player.velocityY *= 0.8
+
+	--animation
+	local spd = sqrt(player.velocityX * player.velocityX + player.velocityY * player.velocityY)
+	player.frame = (player.frame + spd) % 4
+	-- 4 frames
+	if (spd < 0.05) then player.frame = 0 end
+
+	player.maskOffsetX = cos(time())
+	player.maskOffsetY = sin(time())
 
 	--shooting
 	local curShootingBTN = btn(4)
@@ -100,11 +118,50 @@ function updatePlayer()
 	player.aimSpeed = 0.5
 	if (player.aimLock) player.aimSpeed = 0.1
 	player.aimDirection = lerp_angle(player.aimDirection, player.aimTarget, player.aimSpeed)
-
-	
 end
 
 function isAiming()
-	return (btn(4))
+	return btn(4)
 end
 
+function update_movement_inputs()
+	if btn(⬅️) then
+		if not btn(4) then player.velocityX -= player.acceleration end
+		player.directionX = -1
+	end
+	if btn(➡️) then
+		if not btn(4) then player.velocityX += player.acceleration end
+		player.directionX = 1
+	end
+	if btn(⬆️) then
+		if not btn(4) then player.velocityY -= player.acceleration end
+		player.directionY = -1
+	end
+	if btn(⬇️) then
+		if not btn(4) then player.velocityY += player.acceleration end
+		player.directionY = 1
+	end
+end
+
+local prevMaskLeftBTN = false
+local prevMaskRightBTN = false
+
+function change_mask_inputs()
+	local curMaskLeftBTN = btn(⬅️)
+	if not prevMaskLeftBTN and curMaskLeftBTN then
+		player.mask += 1
+		if player.mask > player.maskMax then
+			player.mask = 0
+		end
+	end
+	prevMaskLeftBTN = curMaskLeftBTN
+
+	local curMaskRightBTN = btn(➡️) 
+	if not prevMaskRightBTN and curMaskRightBTN then
+		player.mask -= 1
+		if player.mask < 0 then
+			player.mask = player.maskMax
+		end
+	end
+	prevMaskRightBTN = curMaskRightBTN
+end
